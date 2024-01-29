@@ -20,42 +20,52 @@ router.get('/', (req, res) => {
     })
 
 });
+// router to fetch movie details from the "movies" table in postico then 
+//fetches genres from the "genre" table and sends both queries in a combined response to the client
 
-router.get('/:id', (req,res) => {
+router.get('/:id', (req, res) => {
   console.log("req.params.id", req.params.id)
-  
+     //empty object to store details about the movie clicked
   let movieDetails = {}
-  console.log("details for movie with id:", movieDetails)
-  
+  console.log("movie details - should be empty", movieDetails)
+     //SQL query to select all colums associated with the id (row)
   let queryText =
-  `SELECT * FROM "movies"
+    `SELECT * FROM "movies"
   WHERE "id" = $1;`;
 
+      //array that contains the movie id called in the url path
   let queryParams = [req.params.id];
- 
-  pool.query(queryText, queryParams)
-  .then(result => {
-    movieDetails = {...movieDetails, ...result.rows[0]}
-    console.log("Movie Details", movieDetails)
 
-    queryText = `
+  pool.query(queryText, queryParams)
+        //promise chain that handles the successful execution of SQL query
+    .then(result => {
+        //This adds movie details to the object. The movieDetails object is updated by merging its current contents with the first row of the query result.
+      movieDetails = { ...movieDetails, ...result.rows[0] }
+      console.log("Movie Details after - should not be empty", movieDetails)
+
+        //This SQL query updates the previous queryText to selec the genre associated with the movieID
+      queryText = `
     SELECT genres.name FROM "movies"
     JOIN "movies_genres" ON movies_genres.movie_id = movies.id
     JOIN "genres" ON movies_genres.genre_id = genres.id
     WHERE movies.id = $1;
     `
-    pool.query(queryText, queryParams)
-    .then(result => {
-      movieDetails = {...movieDetails, genres: result.rows}
-      console.log("movie details", movieDetails)
-      res.send(movieDetails)
-    }).catch(error => {
-      console.log("error", error)
+        //execution of new query with updated queryText
+      pool.query(queryText, queryParams)
+        // start of another promise chain
+        .then(result => {
+            //updates movieDetails object to include genres
+          movieDetails = { ...movieDetails, genres: result.rows }
+          console.log("movie details", movieDetails)
+            //sends movieDetails object to the client
+          res.send(movieDetails)
+        }).catch(error => {
+          console.log("error", error)
+        })
     })
-  })
-  .catch(error => {
-    console.log("error getting details", error)
-  })
+    .catch(error => {
+      console.log("error getting details", error)
+    })
 })
 
 router.post('/', (req, res) => {
@@ -100,7 +110,7 @@ router.post('/', (req, res) => {
           // catch for second query
           console.log(err);
           res.sendStatus(500)
-      })
+        })
     }).catch(err => { // 👈 Catch for first query
       console.log(err);
       res.sendStatus(500)

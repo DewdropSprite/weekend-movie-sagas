@@ -2,8 +2,13 @@ import { Route, HashRouter as Router } from 'react-router-dom';
 import MovieList from '../MovieList/MovieList';
 import './App.css';
 import MovieDetails from '../MovieDetails/MovieDetails';
+import Album from '../album/Album';
 
-function App() {
+
+
+
+const App = () => {
+
   return (
     <div className="App">
       <h1>The Movies Saga!</h1>
@@ -14,7 +19,7 @@ function App() {
         
       {/* Details page */}
         <Route path="/details">
-          <MovieDetails />
+            <MovieDetails />
         </Route>
         
 
@@ -25,5 +30,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;
